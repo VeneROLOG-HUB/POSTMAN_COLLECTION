@@ -1,0 +1,723 @@
+{
+	"info": {
+		"_postman_id": "7032a244-9e0f-41c0-8450-703b2fa8c2e2",
+		"name": "Получение нарушений в рамках задания и вне задания",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Авторизация админ",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = JSON.parse(responseBody);//Парсим ответ\r",
+							"pm.environment.set(\"token\", jsonData.accessToken);//извлекаем Акцесс токен\r",
+							"\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"let roleData = JSON.parse(responseBody);//Парсим ответ\r",
+							"pm.globals.set(\"ROLE\", roleData.userRole);//извлекаем Акцесс токен"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"login\": \"VeterOK123\",\r\n  \"password\": \"VeterOK123\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147/api/security/authenticate",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"path": [
+						"api",
+						"security",
+						"authenticate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Создание задания",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let roleID = JSON.parse(responseBody);\r",
+							"pm.globals.set(\"ID\", roleID);\r",
+							"\r",
+							"switch (pm.globals.get(\"ROLE\")) {\r",
+							"    case \"ADMINISTRATOR\":\r",
+							"\r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MODERATOR\":\r",
+							"\r",
+							"    pm.test(\"Status code is 403\", function () {\r",
+							"    pm.response.to.have.status(403);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"OPERATOR\":\r",
+							"\r",
+							"    pm.test(\"Status code is 403\", function () {\r",
+							"    pm.response.to.have.status(403);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MARKETER\":\r",
+							"\r",
+							"    pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    \r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// random generator function\r",
+							"function getRandomInt(min, max) {\r",
+							"        min = Math.ceil(min);\r",
+							"        max = Math.floor(max);\r",
+							"        return Math.floor(Math.random() * (max - min)) + min;\r",
+							"}\r",
+							"// generate the random value\r",
+							"const mylogin = getRandomInt(0,10000);\r",
+							"// set the value into the global variable\r",
+							"pm.globals.set('zadanieL', mylogin);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Date",
+						"type": "text",
+						"value": "{{data}}",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"status\":\"START\",\r\n    \"name\":\"{{zadanieL}}\",\r\n    \"description\":\"{{zadanieL}}\",\r\n    \"goodsGroups\":[\"tobacco\"],\r\n    \"extraInfos\":[{\"imageUrl\":\"https://dev.mobile.crpt.tech/frontend/assets/promo-1.svg\",\r\n    \"description\":\"{{zadanieL}}\",\r\n    \"ordinalNumber\":1}],\r\n    \"actions\":\r\n    [\r\n        {\r\n            \"code\":\"side_pack\",\r\n            \"ordinalNumber\":1,\r\n            \"violationKindCodes\":[\"no_importer_info\"],\r\n            \"description\":\"{{zadanieL}}\",\r\n            \"required\":true,\r\n            \"checks\":[]\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147/api/promotions",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"path": [
+						"api",
+						"promotions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Просмотр списка заданий (guid)",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"забираем guid\", function(){\r",
+							"var jsonData = JSON.parse(responseBody);\r",
+							"var el = pm.globals.get(\"zadanieL\");\r",
+							"for(let i in jsonData.tasks) {\r",
+							"    \r",
+							"\tif(jsonData.tasks[i].name == el) {\r",
+							"\t\tpm.globals.set(\"guid\",jsonData.tasks[i].guid);\r",
+							"\t}\r",
+							"    \r",
+							"}});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Find",
+						"value": "{{zadanieL}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147:81/api/outer/tasks",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"port": "81",
+					"path": [
+						"api",
+						"outer",
+						"tasks"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "{{zadanieL}}",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Просмотр списка нарушений",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let idNarushenii = JSON.parse(responseBody);//Парсим ответ\r",
+							"pm.globals.set(\"idNarushenii\", idNarushenii.content[0].id+1);//извлекаем Акцесс\r",
+							"\r",
+							"switch (pm.globals.get(\"ROLE\")) {\r",
+							"    case \"ADMINISTRATOR\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MODERATOR\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"OPERATOR\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MARKETER\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "page",
+						"value": "{{page}}",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "size",
+						"value": "20",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147/api/violations?page=1&size=20&sort=checkDate%2Cdesc",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"path": [
+						"api",
+						"violations"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						},
+						{
+							"key": "sort",
+							"value": "checkDate%2Cdesc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Нарушение по заданию",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"postman.setGlobalVariable('date-time', (new Date()).toISOString());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"uuid\": \"{{$guid}}\",\r\n    \"data\": [\r\n      {\r\n        \"id\": {{idNarushenii}},\r\n        \"user\": {\r\n          \"id\": 124,\r\n          \"phoneMobile\": \"79536420423\"\r\n        },\r\n        \"status\": 0,\r\n        \"complaintType\": 2,\r\n        \"checkDate\": \"{{date-time}}\",\r\n        \"guidPromotion\": \"{{guid}}\",\r\n        \"tasks\": [\r\n          \r\n          {\r\n                    \"code\": \"side_pack\",\r\n                    \"description\": \"Фото боковой части пачки\",\r\n                     \"urls\":[\"https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk69FHCcJ5T1pCaBv5RrqB36aKTM5SRkZCeTgDn6uOyic\",\"https://fullhdoboi.ru/wp-content/uploads/_ph/6/75578843.jpg\"],\r\n                    \"ordinalNumber\": 1,\r\n                    \"required\": true\r\n                },\r\n                {\r\n                    \"code\": \"side_pack\",\r\n                    \"description\": \"Фото боковой части пачки\",\r\n                    \"urls\":[\"https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk69FHCcJ5T1pCaBv5RrqB36aKTM5SRkZCeTgDn6uOyic\",\"https://fullhdoboi.ru/wp-content/uploads/_ph/6/75578843.jpg\"],\r\n                    \"ordinalNumber\": 2,\r\n                    \"required\": true\r\n\r\n                   \r\n                },\r\n                {\r\n                    \"code\": \"qr_receipt\",\r\n                    \"description\": \"Подтверждение QR кода чека\",\r\n                    \"ordinalNumber\": 3,\r\n                    \"type\": \"scan\",\r\n                    \"required\": false,\r\n                        \"receipt\": {\r\n\t          \"codeData\": {\r\n\t          \"fiscalDate\": 1606241160000,\r\n\t          \"operationType\": 1,\r\n\t          \"cost\": 6798,\r\n\t          \"fiscalDriveNumber\": 928244030073764,\r\n\t          \"fiscalDocumentNumber\": 5566,\r\n\t          \"fiscalSign\": 447821404\r\n\t        \t\t\t}\r\n                }}\r\n         \r\n        ]\r\n      }\r\n    ]\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147:81/api/outer/complaints",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"port": "81",
+					"path": [
+						"api",
+						"outer",
+						"complaints"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Изменение статуса задания",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"switch (pm.globals.get(\"ROLE\")) {\r",
+							"    case \"ADMINISTRATOR\":\r",
+							"\r",
+							"    pm.test(\"Редактирование карточки задания код 200 \" + pm.globals.get(\"Status\") , function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MODERATOR\":\r",
+							"\r",
+							"    pm.test(\"Редактирование карточки задания статус код 403\", function () {\r",
+							"    pm.response.to.have.status(403);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"OPERATOR\":\r",
+							"\r",
+							"    pm.test(\"Редактирование карточки задания статус код 403\", function () {\r",
+							"    pm.response.to.have.status(403);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MARKETER\":\r",
+							"\r",
+							"    pm.test(\"Редактирование карточки задания код 200 \" + pm.globals.get(\"Status\") , function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"switch (pm.globals.get(\"Status\")) \r",
+							"{\r",
+							"    case \"START\":\r",
+							"    var mystatus1 = \"STOP\";\r",
+							"    pm.globals.set('Status', mystatus1);\r",
+							"\r",
+							"    break;\r",
+							"    case \"STOP\":\r",
+							"    var mystatus2 = \"START\";\r",
+							"    pm.globals.set('Status', mystatus2);\r",
+							"    break;\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"status\":\"{{Status}}\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147/api/promotions/{{ID}}/change-status",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"path": [
+						"api",
+						"promotions",
+						"{{ID}}",
+						"change-status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Просмотр списка нарушений",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let idNarushenii = JSON.parse(responseBody);//Парсим ответ\r",
+							"pm.globals.set(\"idNarushenii\", idNarushenii.content[0].id+1);//извлекаем Акцесс\r",
+							"\r",
+							"switch (pm.globals.get(\"ROLE\")) {\r",
+							"    case \"ADMINISTRATOR\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MODERATOR\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"OPERATOR\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"    case \"MARKETER\":\r",
+							"\r",
+							"    pm.test(\"Просмотр списка нарушений статус код 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"    });\r",
+							"\r",
+							"    break;\r",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "page",
+						"value": "{{page}}",
+						"type": "text",
+						"disabled": true
+					},
+					{
+						"key": "size",
+						"value": "20",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147/api/violations?page=1&size=20&sort=checkDate%2Cdesc",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"path": [
+						"api",
+						"violations"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						},
+						{
+							"key": "sort",
+							"value": "checkDate%2Cdesc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Нарушение по заданию",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"postman.setGlobalVariable('date-time', (new Date()).toISOString());"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"uuid\": \"{{$guid}}\",\r\n    \"data\": [\r\n      {\r\n        \"id\": {{idNarushenii}},\r\n        \"user\": {\r\n          \"id\": 124,\r\n          \"phoneMobile\": \"79536420423\"\r\n        },\r\n        \"status\": 0,\r\n        \"complaintType\": 2,\r\n        \"checkDate\": \"{{date-time}}\",\r\n        \"guidPromotion\": \"{{guid}}\",\r\n        \"tasks\": [\r\n          \r\n          {\r\n                    \"code\": \"side_pack\",\r\n                    \"description\": \"Фото боковой части пачки\",\r\n                     \"urls\":[\"https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk69FHCcJ5T1pCaBv5RrqB36aKTM5SRkZCeTgDn6uOyic\",\"https://fullhdoboi.ru/wp-content/uploads/_ph/6/75578843.jpg\"],\r\n                    \"ordinalNumber\": 1,\r\n                    \"required\": true\r\n                },\r\n                {\r\n                    \"code\": \"side_pack\",\r\n                    \"description\": \"Фото боковой части пачки\",\r\n                    \"urls\":[\"https://i.mycdn.me/i?r=AzEPZsRbOZEKgBhR0XGMT1Rk69FHCcJ5T1pCaBv5RrqB36aKTM5SRkZCeTgDn6uOyic\",\"https://fullhdoboi.ru/wp-content/uploads/_ph/6/75578843.jpg\"],\r\n                    \"ordinalNumber\": 2,\r\n                    \"required\": true\r\n\r\n                   \r\n                },\r\n                {\r\n                    \"code\": \"qr_receipt\",\r\n                    \"description\": \"Подтверждение QR кода чека\",\r\n                    \"ordinalNumber\": 3,\r\n                    \"type\": \"scan\",\r\n                    \"required\": false,\r\n                        \"receipt\": {\r\n\t          \"codeData\": {\r\n\t          \"fiscalDate\": 1606241160000,\r\n\t          \"operationType\": 1,\r\n\t          \"cost\": 6798,\r\n\t          \"fiscalDriveNumber\": 928244030073764,\r\n\t          \"fiscalDocumentNumber\": 5566,\r\n\t          \"fiscalSign\": 447821404\r\n\t        \t\t\t}\r\n                }}\r\n         \r\n        ]\r\n      }\r\n    ]\r\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://91.242.35.147:81/api/outer/complaints",
+					"protocol": "http",
+					"host": [
+						"91",
+						"242",
+						"35",
+						"147"
+					],
+					"port": "81",
+					"path": [
+						"api",
+						"outer",
+						"complaints"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
