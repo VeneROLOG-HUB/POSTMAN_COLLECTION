@@ -3,8 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.mycompany.projectgroup</groupId>
-  <artifactId>projectname</artifactId>
-  <version>01.03.03-00</version>
+  <artifactId>postman</artifactId>  
+  <artifactId>narusheniy</artifactId>
+  <version>01</version>
 
   <build>
   </build>
